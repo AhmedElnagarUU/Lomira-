@@ -34,3 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Testing & Validation
+
+- `npm run storybook` spins up component previews for both the landing page and the new dashboard shell. Visual baselines live in `*.stories.tsx`.
+- `npm run test:visual` executes Storybook’s test runner for snapshot/interaction checks.
+- `npm run test:e2e` launches the Playwright suite located in `tests/`, covering navigation flows such as `/dashboard`.
+- Additional guidance lives in `docs/testing-dashboard.md`.
