@@ -72,7 +72,7 @@ export const Pricing: React.FC = () => {
             Simple, Transparent Pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose the plan that's right for you. All plans include our core features.
+            Choose the plan that&rsquo;s right for you. All plans include our core features.
           </p>
         </div>
 
