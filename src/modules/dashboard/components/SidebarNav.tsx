@@ -2,12 +2,12 @@
 
 import React from 'react';
 import clsx from 'clsx';
-import type { DashboardNavItem } from '../types';
+import type { DashboardNavItem, DashboardSectionId } from '../types';
 
 interface SidebarNavProps {
   items: DashboardNavItem[];
-  activeItem: string;
-  onSelect: (value: string) => void;
+  activeItem: DashboardSectionId;
+  onSelect: (value: DashboardSectionId) => void;
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({

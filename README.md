@@ -41,3 +41,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - `npm run test:visual` executes Storybook’s test runner for snapshot/interaction checks.
 - `npm run test:e2e` launches the Playwright suite located in `tests/`, covering navigation flows such as `/dashboard`.
 - Additional guidance lives in `docs/testing-dashboard.md`.
+
+## Dashboard Data Flow
+
+- `/api/dashboard` currently serves mocked metrics so UI components can stay database-agnostic; swap the handler’s internals when a real data source is ready.
+- Client components call this endpoint via `useDashboardData`, which handles loading/error states and exposes a `refresh` helper for future mutations.
+- Storybook stories pass `initialData` to avoid network requests, while runtime routes allow the hook to fetch from the API.
