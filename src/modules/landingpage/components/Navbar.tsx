@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Container } from '@/shared/components/Container';
 import { Button } from '@/shared/components/Button';
+import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,9 +48,11 @@ export const Navbar: React.FC = () => {
             >
               Sign In
             </a>
+            <Link href="/dashboard">
             <Button variant="primary" size="md">
               Get Started
             </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}

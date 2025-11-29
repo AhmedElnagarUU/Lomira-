@@ -1,0 +1,3 @@
+export { PremiumBadge } from './PremiumBadge';
+
+

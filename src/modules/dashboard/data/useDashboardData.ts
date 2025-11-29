@@ -1,16 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { DashboardResponse } from '../types';
+import { getUserId } from '@/shared/lib/userSession';
+import type { PageDocument } from '@/modules/pages/types';
 
-export const fetchDashboardData = async (): Promise<DashboardResponse> => {
-  const response = await fetch('/api/dashboard');
+import type { DashboardNavItem } from '../types';
+
+export interface DashboardData {
+  meta: { updatedAt: string };
+  navigation: DashboardNavItem[];
+  pages?: PageDocument[];
+}
+
+export const fetchDashboardData = async (): Promise<DashboardData> => {
+  const userId = typeof window !== 'undefined' ? getUserId() : 'default-user';
+  const response = await fetch(`/api/dashboard?userId=${userId}`);
   if (!response.ok) {
     throw new Error('Unable to load dashboard data.');
   }
   return response.json();
 };
 
-export const useDashboardData = (initialData?: DashboardResponse) => {
-  const [data, setData] = useState<DashboardResponse | undefined>(initialData);
+export const useDashboardData = (initialData?: DashboardData) => {
+  const [data, setData] = useState<DashboardData | undefined>(initialData);
   const [loading, setLoading] = useState<boolean>(!initialData);
   const [error, setError] = useState<string | undefined>();
 

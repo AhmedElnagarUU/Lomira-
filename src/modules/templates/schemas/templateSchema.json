@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template Schema",
+  "description": "JSON schema for landing page templates",
+  "type": "object",
+  "required": ["templateId", "name", "category", "thumbnail", "structure", "defaultTheme", "tags", "isPremium"],
+  "properties": {
+    "templateId": {
+      "type": "string",
+      "description": "Unique template identifier"
+    },
+    "name": {
+      "type": "object",
+      "required": ["en", "ar"],
+      "properties": {
+        "en": { "type": "string" },
+        "ar": { "type": "string" }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": ["product", "real-estate", "clinic", "restaurant", "service", "general"]
+    },
+    "thumbnail": {
+      "type": "string",
+      "format": "uri"
+    },
+    "previewImages": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "structure": {
+      "type": "object",
+      "required": ["sections"],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "order", "config", "content"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["hero", "features", "pricing", "testimonials", "cta", "form", "gallery", "stats", "about"]
+              },
+              "order": { "type": "number" },
+              "config": {
+                "type": "object",
+                "properties": {
+                  "backgroundColor": { "type": "string" },
+                  "padding": {
+                    "type": "object",
+                    "properties": {
+                      "top": { "type": "string" },
+                      "bottom": { "type": "string" },
+                      "left": { "type": "string" },
+                      "right": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              "content": {
+                "type": "object",
+                "required": ["en", "ar"],
+                "properties": {
+                  "en": { "type": "object" },
+                  "ar": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "globalStyles": {
+          "type": "object",
+          "properties": {
+            "spacing": {
+              "type": "object",
+              "properties": {
+                "sectionPadding": { "type": "string" },
+                "containerMaxWidth": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "defaultTheme": {
+      "type": "object",
+      "required": ["language", "colors", "fonts"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["en", "ar"]
+        },
+        "colors": {
+          "type": "object",
+          "required": ["primary", "secondary", "background", "text", "accent"],
+          "properties": {
+            "primary": { "type": "string" },
+            "secondary": { "type": "string" },
+            "background": { "type": "string" },
+            "text": { "type": "string" },
+            "accent": { "type": "string" }
+          }
+        },
+        "fonts": {
+          "type": "object",
+          "required": ["heading", "body"],
+          "properties": {
+            "heading": { "type": "string" },
+            "body": { "type": "string" }
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "isPremium": {
+      "type": "boolean"
+    }
+  }
+}
+

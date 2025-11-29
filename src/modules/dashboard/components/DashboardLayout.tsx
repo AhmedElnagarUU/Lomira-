@@ -3,23 +3,29 @@
 import React, { useMemo, useState } from 'react';
 import { Container } from '@/shared/components/Container';
 import {
-  AutomationList,
   DashboardHeader,
-  EngagementTable,
   ErrorState,
   LoadingState,
   MobileSectionSelect,
-  OverviewGrid,
   SidebarNav,
+  PagesOverview,
+  PagesList,
 } from '.';
+import { TemplateGrid } from '@/modules/templates/components';
+import { AnalyticsDashboard } from '@/modules/analytics/components';
 import type {
-  DashboardResponse,
   DashboardSectionId,
+  DashboardNavItem,
 } from '../types';
+import type { PageDocument } from '@/modules/pages/types';
 import { useDashboardData } from '../data/useDashboardData';
 
 interface DashboardLayoutProps {
-  initialData?: DashboardResponse;
+  initialData?: {
+    meta: { updatedAt: string };
+    navigation: DashboardNavItem[];
+    pages?: PageDocument[];
+  };
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -27,7 +33,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const { data, loading, error } = useDashboardData(initialData);
   const navItems = useMemo(
-    () => data?.navigation ?? [],
+    () => (data?.navigation ?? []) as DashboardNavItem[],
     [data?.navigation]
   );
   const [activeSection, setActiveSection] =
@@ -43,12 +49,43 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     if (!data) return null;
 
     switch (activeSection) {
-      case 'engagement':
-        return <EngagementTable channels={data.engagement} />;
-      case 'automation':
-        return <AutomationList flows={data.automation} />;
+      case 'analytics':
+        // TODO: Show analytics for all pages or selected page
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Analytics</h2>
+              <p className="text-slate-600">Select a page to view detailed analytics</p>
+            </div>
+            {data.pages && data.pages.length > 0 ? (
+              <div className="grid gap-4">
+                {data.pages.map((page) => (
+                  <div key={page.pageId} className="border rounded-lg p-4">
+                    <h3 className="font-semibold mb-2">{page.title}</h3>
+                    <AnalyticsDashboard pageId={page.pageId} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No pages to show analytics for yet.</p>
+            )}
+          </div>
+        );
+      case 'templates':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Templates</h2>
+              <p className="text-slate-600">Choose a template to start building your landing page</p>
+            </div>
+            <TemplateGrid />
+          </div>
+        );
+      case 'pages':
+        return <PagesList pages={data.pages || []} />;
+      case 'overview':
       default:
-        return <OverviewGrid metrics={data.overview} />;
+        return <PagesOverview pages={data.pages || []} />;
     }
   };
 
