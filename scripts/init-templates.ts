@@ -4,7 +4,7 @@
  */
 
 import { MongoClient } from 'mongodb';
-import { allProfessionalTemplates } from '../src/modules/templates/data/professionalTemplates';
+import { allTemplates } from '../src/modules/templates/data/templateData';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.MONGODB_DB_NAME || 'lomira';
@@ -23,7 +23,7 @@ async function initTemplates() {
     // await collection.deleteMany({});
 
     // Insert templates
-    for (const template of allProfessionalTemplates) {
+    for (const template of allTemplates) {
       const existing = await collection.findOne({ templateId: template.templateId });
       
       if (existing) {

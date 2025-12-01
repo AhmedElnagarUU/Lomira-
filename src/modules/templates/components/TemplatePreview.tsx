@@ -15,7 +15,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template }) =>
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
       <div className="relative aspect-video bg-gray-100">
         <img
           src={template.thumbnail || '/placeholder-template.jpg'}
@@ -28,10 +28,10 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template }) =>
           </div>
         )}
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1">{template.name.en}</h3>
-        <p className="text-sm text-gray-500 mb-3 capitalize">{template.category}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-1">{template.name.en}</h3>
+        <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3 capitalize">{template.category}</p>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
           {template.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
@@ -43,7 +43,7 @@ export const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template }) =>
         </div>
         <button
           onClick={handleUseTemplate}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="w-full px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base mt-auto"
         >
           Use Template
         </button>

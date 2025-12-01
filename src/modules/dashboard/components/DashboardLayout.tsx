@@ -11,7 +11,6 @@ import {
   PagesOverview,
   PagesList,
 } from '.';
-import { TemplateGrid } from '@/modules/templates/components';
 import { AnalyticsDashboard } from '@/modules/analytics/components';
 import type {
   DashboardSectionId,
@@ -69,16 +68,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             ) : (
               <p className="text-gray-500">No pages to show analytics for yet.</p>
             )}
-          </div>
-        );
-      case 'templates':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Templates</h2>
-              <p className="text-slate-600">Choose a template to start building your landing page</p>
-            </div>
-            <TemplateGrid />
           </div>
         );
       case 'pages':

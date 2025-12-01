@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { TemplatePreview } from './TemplatePreview';
 import type { TemplateMetadata } from '../types';
 import type { TemplateCategory } from '@/shared/types';
@@ -47,7 +48,11 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+        setError(errorMessage);
+        toast.error('Failed to fetch templates', {
+          description: 'Templates are being loaded from code as fallback.',
+        });
       } finally {
         setLoading(false);
       }
@@ -58,7 +63,7 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
 
   // Initialize templates in database
   const handleInitializeTemplates = async () => {
-    try {
+    const initPromise = async () => {
       setInitializing(true);
       setInitStatus(null);
       const response = await fetch('/api/templates/init', {
@@ -78,11 +83,21 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
         const data = await templatesResponse.json();
         setAllTemplates(data);
       }
-    } catch (err) {
-      setInitStatus(err instanceof Error ? err.message : 'Failed to initialize templates');
-    } finally {
+      
+      return result.message || 'Templates initialized successfully!';
+    };
+
+    toast.promise(initPromise(), {
+      loading: 'Initializing templates...',
+      success: (message) => message,
+      error: (err) => {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize templates';
+        setInitStatus(errorMessage);
+        return errorMessage;
+      },
+    }).finally(() => {
       setInitializing(false);
-    }
+    });
   };
 
   // Apply initial props
@@ -126,29 +141,32 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-gray-500">Loading templates...</p>
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+          <p className="text-gray-500">Loading templates...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="text-center">
+      <div className="flex flex-col items-center justify-center py-8 sm:py-12 space-y-4 px-4">
+        <div className="text-center max-w-md">
           <p className="text-red-500 font-medium mb-2">Error: {error}</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-4">
             Templates are being loaded from code as fallback. You can still use them, but consider initializing the database.
           </p>
         </div>
         <button
           onClick={handleInitializeTemplates}
           disabled={initializing}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm sm:text-base"
         >
           {initializing ? 'Initializing...' : 'Initialize Templates in Database'}
         </button>
         {initStatus && (
-          <p className={`text-sm ${initStatus.includes('success') ? 'text-green-600' : 'text-gray-600'}`}>
+          <p className={`text-sm px-4 text-center ${initStatus.includes('success') || initStatus.includes('initialized') ? 'text-green-600' : 'text-gray-600'}`}>
             {initStatus}
           </p>
         )}
@@ -167,7 +185,7 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
             placeholder="Search templates by name or tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
           />
           <svg
             className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
@@ -185,14 +203,14 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
           {/* Category Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Category:</label>
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Category:</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as TemplateCategory | 'all')}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-initial"
               aria-label="Filter by category"
             >
               <option value="all">All Categories</option>
@@ -205,15 +223,15 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
           </div>
 
           {/* Premium Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Premium:</label>
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Premium:</label>
             <select
               value={showPremiumOnly === null ? 'all' : showPremiumOnly ? 'premium' : 'free'}
               onChange={(e) => {
                 const value = e.target.value;
                 setShowPremiumOnly(value === 'all' ? null : value === 'premium');
               }}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-initial"
               aria-label="Filter by premium status"
             >
               <option value="all">All Templates</option>
@@ -230,7 +248,7 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
                 setSelectedCategory('all');
                 setShowPremiumOnly(null);
               }}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 underline"
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 underline sm:ml-auto"
             >
               Clear Filters
             </button>
@@ -268,7 +286,7 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
               <button
                 onClick={handleInitializeTemplates}
                 disabled={initializing}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
               >
                 {initializing ? 'Initializing...' : 'Initialize Now'}
               </button>
@@ -303,7 +321,7 @@ export const TemplateGrid: React.FC<TemplateGridProps> = ({ category, premium })
             <button
               onClick={handleInitializeTemplates}
               disabled={initializing}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm sm:text-base"
             >
               {initializing ? 'Initializing...' : 'Initialize Templates'}
             </button>

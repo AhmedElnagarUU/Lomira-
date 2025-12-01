@@ -22,11 +22,6 @@ export async function GET(request: Request) {
         description: 'All your landing pages',
       },
       {
-        id: 'templates',
-        label: 'Templates',
-        description: 'Browse and use templates',
-      },
-      {
         id: 'analytics',
         label: 'Analytics',
         description: 'Page performance insights',

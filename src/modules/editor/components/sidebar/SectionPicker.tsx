@@ -1,3 +1,7 @@
+/**
+ * SectionPicker - Modal component for selecting section types to add
+ */
+
 'use client';
 
 import React from 'react';

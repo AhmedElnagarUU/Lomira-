@@ -65,3 +65,4 @@ export function generatePricingHTML(section: Section, theme: ThemeSettings): str
   `;
 }
 
+

@@ -57,6 +57,59 @@
                       "left": { "type": "string" },
                       "right": { "type": "string" }
                     }
+                  },
+                  "responsive": {
+                    "type": "object",
+                    "properties": {
+                      "mobile": {
+                        "type": "object",
+                        "properties": {
+                          "padding": {
+                            "type": "object",
+                            "properties": {
+                              "top": { "type": "string" },
+                              "bottom": { "type": "string" },
+                              "left": { "type": "string" },
+                              "right": { "type": "string" }
+                            }
+                          },
+                          "display": { "type": "string", "enum": ["block", "none", "flex", "grid"] },
+                          "layout": { "type": "string" }
+                        }
+                      },
+                      "tablet": {
+                        "type": "object",
+                        "properties": {
+                          "padding": {
+                            "type": "object",
+                            "properties": {
+                              "top": { "type": "string" },
+                              "bottom": { "type": "string" },
+                              "left": { "type": "string" },
+                              "right": { "type": "string" }
+                            }
+                          },
+                          "display": { "type": "string", "enum": ["block", "none", "flex", "grid"] },
+                          "layout": { "type": "string" }
+                        }
+                      },
+                      "desktop": {
+                        "type": "object",
+                        "properties": {
+                          "padding": {
+                            "type": "object",
+                            "properties": {
+                              "top": { "type": "string" },
+                              "bottom": { "type": "string" },
+                              "left": { "type": "string" },
+                              "right": { "type": "string" }
+                            }
+                          },
+                          "display": { "type": "string", "enum": ["block", "none", "flex", "grid"] },
+                          "layout": { "type": "string" }
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -123,4 +176,5 @@
     }
   }
 }
+
 

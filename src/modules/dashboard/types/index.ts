@@ -1,4 +1,4 @@
-export type DashboardSectionId = 'overview' | 'pages' | 'analytics' | 'templates';
+export type DashboardSectionId = 'overview' | 'pages' | 'analytics';
 
 export interface DashboardNavItem {
   id: DashboardSectionId;

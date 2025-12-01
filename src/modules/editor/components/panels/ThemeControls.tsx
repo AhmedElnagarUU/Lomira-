@@ -1,7 +1,11 @@
+/**
+ * ThemeControls - Panel for editing theme settings
+ */
+
 'use client';
 
 import React from 'react';
-import { useEditorStore } from '../store/editorStore';
+import { useEditorStore } from '../../store/editorStore';
 
 const ARABIC_FONTS = ['Cairo', 'Tajawal', 'IBM Plex Sans Arabic', 'Almarai'];
 const ENGLISH_FONTS = ['Inter', 'Roboto', 'Poppins', 'Montserrat', 'Open Sans'];
@@ -16,8 +20,8 @@ export const ThemeControls: React.FC = () => {
   const fonts = theme.language === 'ar' ? ARABIC_FONTS : ENGLISH_FONTS;
 
   return (
-    <div className="p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">Theme Settings</h3>
+    <div className="p-3 sm:p-4">
+      <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 sm:mb-4">Theme Settings</h3>
 
       {/* Language Toggle */}
       <div className="mb-4">
@@ -63,7 +67,9 @@ export const ThemeControls: React.FC = () => {
                   colors: { ...theme.colors, primary: e.target.value },
                 })
               }
-              className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+              className="w-10 h-10 border border-gray-300 rounded cursor-pointer touch-manipulation"
+              title="Primary color"
+              aria-label="Primary color picker"
             />
             <input
               type="text"
@@ -74,6 +80,9 @@ export const ThemeControls: React.FC = () => {
                 })
               }
               className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              title="Primary color hex code"
+              aria-label="Primary color hex code"
+              placeholder="#3b82f6"
             />
           </div>
         </div>
@@ -91,7 +100,9 @@ export const ThemeControls: React.FC = () => {
                   colors: { ...theme.colors, secondary: e.target.value },
                 })
               }
-              className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+              className="w-10 h-10 border border-gray-300 rounded cursor-pointer touch-manipulation"
+              title="Secondary color"
+              aria-label="Secondary color picker"
             />
             <input
               type="text"
@@ -102,6 +113,9 @@ export const ThemeControls: React.FC = () => {
                 })
               }
               className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              title="Secondary color hex code"
+              aria-label="Secondary color hex code"
+              placeholder="#8b5cf6"
             />
           </div>
         </div>
@@ -121,6 +135,8 @@ export const ThemeControls: React.FC = () => {
               })
             }
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            title="Heading font"
+            aria-label="Heading font selector"
           >
             {fonts.map((font) => (
               <option key={font} value={font}>
@@ -142,6 +158,8 @@ export const ThemeControls: React.FC = () => {
               })
             }
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            title="Body font"
+            aria-label="Body font selector"
           >
             {fonts.map((font) => (
               <option key={font} value={font}>
@@ -154,5 +172,4 @@ export const ThemeControls: React.FC = () => {
     </div>
   );
 };
-
 

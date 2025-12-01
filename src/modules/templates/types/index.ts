@@ -1,4 +1,5 @@
 import type { TemplateCategory, Language, ThemeSettings } from '@/shared/types';
+import type { EditorElement } from '@/modules/editor/types/elements';
 
 // Template Structure Types
 export interface TemplateStructure {
@@ -9,6 +10,17 @@ export interface TemplateStructure {
       containerMaxWidth: string;
     };
   };
+}
+
+export interface ResponsiveConfig {
+  padding?: {
+    top: string;
+    bottom: string;
+    left: string;
+    right: string;
+  };
+  display?: 'block' | 'none' | 'flex' | 'grid';
+  layout?: string;
 }
 
 export interface Section {
@@ -23,11 +35,17 @@ export interface Section {
       left: string;
       right: string;
     };
+    responsive?: {
+      mobile?: ResponsiveConfig;
+      tablet?: ResponsiveConfig;
+      desktop?: ResponsiveConfig;
+    };
   };
   content: {
     en: Record<string, any>;
     ar: Record<string, any>;
   };
+  elements?: EditorElement[]; // Draggable elements within the section
 }
 
 // Hero Section Content

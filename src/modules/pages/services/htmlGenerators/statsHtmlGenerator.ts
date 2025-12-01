@@ -32,3 +32,4 @@ export function generateStatsHTML(section: Section, theme: ThemeSettings): strin
   `;
 }
 
+

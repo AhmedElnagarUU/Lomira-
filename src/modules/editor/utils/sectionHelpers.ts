@@ -1,13 +1,15 @@
-'use client';
+/**
+ * Section-related utility functions
+ */
 
-import React, { useState } from 'react';
-import { useEditorStore } from '../store/editorStore';
-import { SectionPicker } from './SectionPicker';
 import { v4 as uuidv4 } from 'uuid';
 import type { Section } from '@/modules/templates/types';
+import type { ResponsiveConfig } from '@/modules/templates/types';
 
-// Helper to create default section content
-const createDefaultSection = (type: string): Section => {
+/**
+ * Create a default section with type-specific content
+ */
+export function createDefaultSection(type: string): Section {
   const baseSection: Section = {
     id: uuidv4(),
     type: type as Section['type'],
@@ -147,92 +149,34 @@ const createDefaultSection = (type: string): Section => {
   }
 
   return baseSection;
-};
+}
 
-export const EditorSidebar: React.FC = () => {
-  const { structure, selectedSectionId, setSelectedSection, deleteSection, addSection } = useEditorStore();
-  const [showSectionPicker, setShowSectionPicker] = useState(false);
+/**
+ * Get responsive configuration for a section based on device size
+ */
+export function getResponsiveConfig(
+  section: Section,
+  deviceSize: 'desktop' | 'tablet' | 'mobile'
+): ResponsiveConfig | null {
+  const responsive = section.config?.responsive;
+  if (!responsive) return null;
 
-  if (!structure) {
-    return (
-      <div className="p-4">
-        <p className="text-sm text-gray-500">No sections yet</p>
-        <button
-          onClick={() => setShowSectionPicker(true)}
-          className="mt-2 w-full px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          + Add First Section
-        </button>
-      </div>
-    );
+  switch (deviceSize) {
+    case 'mobile':
+      return responsive.mobile || null;
+    case 'tablet':
+      return responsive.tablet || null;
+    case 'desktop':
+      return responsive.desktop || null;
+    default:
+      return responsive.desktop || null;
   }
+}
 
-  const sortedSections = [...structure.sections].sort((a, b) => a.order - b.order);
-
-  const handleAddSection = (sectionType: string) => {
-    const newSection = createDefaultSection(sectionType);
-    // Set order based on existing sections
-    const maxOrder = Math.max(...structure.sections.map((s) => s.order), -1);
-    newSection.order = maxOrder + 1;
-    addSection(newSection);
-  };
-
-  return (
-    <>
-      <div className="p-4">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Sections</h2>
-          <button
-            onClick={() => setShowSectionPicker(true)}
-            className="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            + Add Section
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {sortedSections.map((section) => (
-            <div
-              key={section.id}
-              className={`p-3 rounded border cursor-pointer transition-colors ${
-                selectedSectionId === section.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => setSelectedSection(section.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 capitalize">
-                    {section.type}
-                  </p>
-                  <p className="text-xs text-gray-500">Section {section.order + 1}</p>
-                </div>
-                <button
-                  className="text-red-500 hover:text-red-700 text-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm('Delete this section?')) {
-                      deleteSection(section.id);
-                    }
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {showSectionPicker && (
-        <SectionPicker
-          onSelect={handleAddSection}
-          onClose={() => setShowSectionPicker(false)}
-        />
-      )}
-    </>
-  );
-};
-
+/**
+ * Sort sections by order
+ */
+export function sortSectionsByOrder(sections: Section[]): Section[] {
+  return [...sections].sort((a, b) => a.order - b.order);
+}
 

@@ -1,15 +1,17 @@
 'use client';
 
 import { create } from 'zustand';
+import { v4 as uuidv4 } from 'uuid';
 import type { TemplateStructure, Section } from '@/modules/templates/types';
 import type { ThemeSettings } from '@/shared/types';
+import type { EditorElement, ElementType, ElementContent } from '@/modules/editor/types/elements';
+import { ELEMENT_METADATA } from '@/modules/editor/types/elements';
 import {
   loadPage,
   savePage as savePageAction,
   publishPage as publishPageAction,
   exportPage as exportPageAction,
 } from '@/lib/server-actions/pageActions';
-import { getTemplateById } from '@/lib/server-actions/templateActions';
 
 interface EditorState {
   // Page data
@@ -20,10 +22,12 @@ interface EditorState {
   
   // UI state
   selectedSectionId: string | null;
+  selectedElement: { sectionId: string; elementId: string } | null;
   isPreviewMode: boolean;
   isPublishing: boolean;
   isSaving: boolean;
   deviceSize: 'desktop' | 'tablet' | 'mobile';
+  clipboard: { type: 'section' | 'element'; data: Section | EditorElement } | null;
   
   // Actions
   loadPage: (pageId: string) => Promise<void>;
@@ -39,8 +43,19 @@ interface EditorState {
   exportHTML: () => Promise<string>;
   publish: (slug?: string) => Promise<void>;
   setSelectedSection: (sectionId: string | null) => void;
+  setSelectedElement: (element: { sectionId: string; elementId: string } | null) => void;
   setPreviewMode: (isPreview: boolean) => void;
   setDeviceSize: (size: 'desktop' | 'tablet' | 'mobile') => void;
+  // Element management
+  addElement: (sectionId: string, elementType: ElementType, position?: number) => void;
+  updateElement: (sectionId: string, elementId: string, updates: Partial<EditorElement>) => void;
+  deleteElement: (sectionId: string, elementId: string) => void;
+  reorderElements: (sectionId: string, elementIds: string[]) => void;
+  // Copy/Paste
+  copySection: (sectionId: string) => void;
+  pasteSection: (position: number) => void;
+  copyElement: (sectionId: string, elementId: string) => void;
+  pasteElement: (sectionId: string, position?: number) => void;
   reset: () => void;
 }
 
@@ -65,10 +80,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   structure: null,
   theme: defaultTheme,
   selectedSectionId: null,
+  selectedElement: null,
   isPreviewMode: false,
   isPublishing: false,
   isSaving: false,
   deviceSize: 'desktop',
+  clipboard: null,
 
   loadPage: async (pageId: string) => {
     try {
@@ -90,7 +107,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   loadTemplate: async (templateId: string) => {
     try {
-      const template = await getTemplateById(templateId);
+      const response = await fetch(`/api/templates/${templateId}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Template not found');
+        }
+        throw new Error('Failed to fetch template');
+      }
+      
+      const template = await response.json();
+      
       if (template) {
         set({
           pageId: null,
@@ -99,6 +126,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           theme: template.defaultTheme,
           selectedSectionId: null,
         });
+      } else {
+        throw new Error('Template data is invalid');
       }
     } catch (error) {
       console.error('Error loading template:', error);
@@ -293,7 +322,219 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   setSelectedSection: (sectionId: string | null) => {
-    set({ selectedSectionId: sectionId });
+    set({ selectedSectionId: sectionId, selectedElement: null });
+  },
+
+  setSelectedElement: (element: { sectionId: string; elementId: string } | null) => {
+    set({ selectedElement: element });
+  },
+
+  addElement: (sectionId: string, elementType: ElementType, position?: number) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const metadata = ELEMENT_METADATA[elementType];
+    const newElement: EditorElement = {
+      id: uuidv4(),
+      type: elementType,
+      order: 0,
+      content: metadata.defaultContent(),
+      style: metadata.defaultStyle,
+    };
+
+    const updatedSections = structure.sections.map((section) => {
+      if (section.id === sectionId) {
+        const elements = section.elements || [];
+        const maxOrder = Math.max(...elements.map((e) => e.order), -1);
+        newElement.order = position !== undefined ? position : maxOrder + 1;
+
+        // Reorder elements if inserting at specific position
+        const updatedElements = [...elements, newElement];
+        if (position !== undefined) {
+          updatedElements.sort((a, b) => a.order - b.order);
+          updatedElements.forEach((el, idx) => {
+            el.order = idx;
+          });
+        }
+
+        return {
+          ...section,
+          elements: updatedElements,
+        };
+      }
+      return section;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+    });
+  },
+
+  updateElement: (sectionId: string, elementId: string, updates: Partial<EditorElement>) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const updatedSections = structure.sections.map((section) => {
+      if (section.id === sectionId && section.elements) {
+        return {
+          ...section,
+          elements: section.elements.map((element) =>
+            element.id === elementId ? { ...element, ...updates } : element
+          ),
+        };
+      }
+      return section;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+    });
+  },
+
+  deleteElement: (sectionId: string, elementId: string) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const updatedSections = structure.sections.map((section) => {
+      if (section.id === sectionId && section.elements) {
+        const filteredElements = section.elements
+          .filter((element) => element.id !== elementId)
+          .map((element, index) => ({ ...element, order: index }));
+        return {
+          ...section,
+          elements: filteredElements,
+        };
+      }
+      return section;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+      selectedElement: null,
+    });
+  },
+
+  reorderElements: (sectionId: string, elementIds: string[]) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const updatedSections = structure.sections.map((section) => {
+      if (section.id === sectionId && section.elements) {
+        const elementsMap = new Map(section.elements.map((e) => [e.id, e]));
+        const reorderedElements = elementIds
+          .map((id) => elementsMap.get(id))
+          .filter((e): e is EditorElement => e !== undefined)
+          .map((element, index) => ({ ...element, order: index }));
+
+        return {
+          ...section,
+          elements: reorderedElements,
+        };
+      }
+      return section;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+    });
+  },
+
+  copySection: (sectionId: string) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const section = structure.sections.find((s) => s.id === sectionId);
+    if (section) {
+      set({ clipboard: { type: 'section', data: { ...section, id: uuidv4() } } });
+    }
+  },
+
+  pasteSection: (position: number) => {
+    const { structure, clipboard } = get();
+    if (!structure || !clipboard || clipboard.type !== 'section') return;
+
+    const section = clipboard.data as Section;
+    const maxOrder = Math.max(...structure.sections.map((s) => s.order), -1);
+    const newSection = {
+      ...section,
+      id: uuidv4(),
+      order: position !== undefined ? position : maxOrder + 1,
+      elements: section.elements?.map((el) => ({ ...el, id: uuidv4() })),
+    };
+
+    const updatedSections = [...structure.sections, newSection].sort((a, b) => a.order - b.order);
+    updatedSections.forEach((s, idx) => {
+      s.order = idx;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+    });
+  },
+
+  copyElement: (sectionId: string, elementId: string) => {
+    const { structure } = get();
+    if (!structure) return;
+
+    const section = structure.sections.find((s) => s.id === sectionId);
+    const element = section?.elements?.find((e) => e.id === elementId);
+    if (element) {
+      set({ clipboard: { type: 'element', data: { ...element, id: uuidv4() } } });
+    }
+  },
+
+  pasteElement: (sectionId: string, position?: number) => {
+    const { structure, clipboard } = get();
+    if (!structure || !clipboard || clipboard.type !== 'element') return;
+
+    const element = clipboard.data as EditorElement;
+    const updatedSections = structure.sections.map((section) => {
+      if (section.id === sectionId) {
+        const elements = section.elements || [];
+        const maxOrder = Math.max(...elements.map((e) => e.order), -1);
+        const newElement = {
+          ...element,
+          id: uuidv4(),
+          order: position !== undefined ? position : maxOrder + 1,
+        };
+
+        const updatedElements = [...elements, newElement];
+        if (position !== undefined) {
+          updatedElements.sort((a, b) => a.order - b.order);
+          updatedElements.forEach((el, idx) => {
+            el.order = idx;
+          });
+        }
+
+        return {
+          ...section,
+          elements: updatedElements,
+        };
+      }
+      return section;
+    });
+
+    set({
+      structure: {
+        ...structure,
+        sections: updatedSections,
+      },
+    });
   },
 
   setPreviewMode: (isPreview: boolean) => {
@@ -311,10 +552,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       structure: null,
       theme: defaultTheme,
       selectedSectionId: null,
+      selectedElement: null,
       isPreviewMode: false,
       isPublishing: false,
       isSaving: false,
       deviceSize: 'desktop',
+      clipboard: null,
     });
   },
 }));

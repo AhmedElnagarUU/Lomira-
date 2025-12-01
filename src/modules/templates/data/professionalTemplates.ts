@@ -13,6 +13,20 @@ const ecommerceTemplateStructure: TemplateStructure = {
       config: {
         backgroundColor: '#ffffff',
         padding: { top: '100px', bottom: '100px', left: '0', right: '0' },
+        responsive: {
+          mobile: {
+            padding: { top: '60px', bottom: '60px', left: '1rem', right: '1rem' },
+            display: 'block',
+          },
+          tablet: {
+            padding: { top: '80px', bottom: '80px', left: '2rem', right: '2rem' },
+            display: 'block',
+          },
+          desktop: {
+            padding: { top: '100px', bottom: '100px', left: '0', right: '0' },
+            display: 'block',
+          },
+        },
       },
       content: {
         en: {
